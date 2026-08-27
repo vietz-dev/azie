@@ -1,6 +1,6 @@
 // azie spawns a shell bound to one Azure subscription. Each shell gets its own
-// kubectl contexts. Each shell gets its own AZURE_CONFIG_DIR, so `az login`
-// and `az account set` in one shell do not affect the others.
+// AZURE_CONFIG_DIR, so `az login` and `az account set` in one shell do not
+// affect the others.
 package main
 
 import (
