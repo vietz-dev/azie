@@ -1,4 +1,4 @@
-// Package config loads the azie settings file, like kubie's ~/.kube/kubie.yaml.
+// Package config loads the azie settings file (~/.config/azie/config.yaml).
 package config
 
 import (
