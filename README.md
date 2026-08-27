@@ -32,6 +32,9 @@ instead of an interactive shell: no rc files, no prompt, the temp dir is removed
 command exits and its exit code is passed on. Use it to start agents (`claude`, `codex`) or
 scripts that must not be affected by `az account set` in other terminals.
 
+Coding agents (Claude Code, Codex, ...) can learn these rules from the `azie` skill in this repo:
+`npx skills@latest add vietz-dev/azie` or copy `skills/azie/SKILL.md` into your project.
+
 `az login` inside an azie shell only affects that shell. Log in once in a normal shell so
 the token cache is inherited by all azie shells.
 
