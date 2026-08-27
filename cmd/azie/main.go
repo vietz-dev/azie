@@ -1,4 +1,4 @@
-// azie spawns a shell bound to one Azure subscription, like kubie does for
+// azie spawns a shell bound to one Azure subscription. Each shell gets its own
 // kubectl contexts. Each shell gets its own AZURE_CONFIG_DIR, so `az login`
 // and `az account set` in one shell do not affect the others.
 package main
@@ -34,7 +34,7 @@ func main() {
 
 	root := &cobra.Command{
 		Use:           "azie",
-		Short:         "kubie for the Azure CLI: one shell, one subscription",
+		Short:         "One shell, one Azure subscription",
 		Version:       version,
 		SilenceUsage:  true,
 		SilenceErrors: true,

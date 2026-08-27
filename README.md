@@ -1,6 +1,6 @@
 # azie
 
-`kubie` for the Azure CLI: each shell gets its own Azure subscription.
+One shell, one Azure subscription: each shell gets its own Azure CLI context.
 
 `az` reads its profile and token cache from `AZURE_CONFIG_DIR` (default `~/.azure`).
 `azie` copies `~/.azure` to a temp dir, marks the chosen subscription as default there
