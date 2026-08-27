@@ -9,6 +9,7 @@ The temp dir is removed when the shell exits.
 
 ```
 go install github.com/vietz-dev/azie/cmd/azie@latest
+mise use -g github:vietz-dev/azie   # or via mise, from the GitHub release
 
 azie ctx                # pick subscription with fzf and spawn a shell
 azie ctx "Customer A"   # same, by name, id or unique substring
