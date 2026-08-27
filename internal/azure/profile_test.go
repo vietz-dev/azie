@@ -56,6 +56,28 @@ func TestDefaultGroup(t *testing.T) {
 	if g := DefaultGroup(fs, "/none"); g != "" {
 		t.Fatalf("got %q", g)
 	}
+
+	// Replace in place, other keys and sections untouched.
+	must(t, SetDefaultGroup(fs, "/c", "other"))
+	if b, _ := afero.ReadFile(fs, "/c/config"); string(b) != "[core]\ngroup = wrong\n[defaults]\ngroup = other\nlocation = westeurope\n" {
+		t.Fatalf("replace:\n%s", b)
+	}
+	// Remove.
+	must(t, SetDefaultGroup(fs, "/c", ""))
+	if b, _ := afero.ReadFile(fs, "/c/config"); string(b) != "[core]\ngroup = wrong\n[defaults]\nlocation = westeurope\n" {
+		t.Fatalf("remove:\n%s", b)
+	}
+	// Section missing: created after the existing content.
+	must(t, afero.WriteFile(fs, "/d/config", []byte("[core]\noutput = json\n"), 0o600))
+	must(t, SetDefaultGroup(fs, "/d", "new-rg"))
+	if b, _ := afero.ReadFile(fs, "/d/config"); string(b) != "[core]\noutput = json\n[defaults]\ngroup = new-rg\n" {
+		t.Fatalf("create section:\n%s", b)
+	}
+	// File missing.
+	must(t, SetDefaultGroup(fs, "/e", "rg"))
+	if g := DefaultGroup(fs, "/e"); g != "rg" {
+		t.Fatalf("round-trip got %q", g)
+	}
 }
 
 func must(t *testing.T, err error) {

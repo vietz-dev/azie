@@ -3,9 +3,11 @@ package azure
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/spf13/afero"
@@ -155,4 +157,38 @@ func DefaultGroup(fs afero.Fs, dir string) string {
 		}
 	}
 	return ""
+}
+
+// SetDefaultGroup writes `[defaults] group = ...` into the az cli config file,
+// creating the file or section if missing. An empty group removes the key.
+func SetDefaultGroup(fs afero.Fs, dir, group string) error {
+	path := filepath.Join(dir, "config")
+	b, err := afero.ReadFile(fs, path)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	var out []string
+	section, at := "", -1 // at: index right after the [defaults] header
+	for line := range strings.SplitSeq(strings.TrimRight(string(b), "\n"), "\n") {
+		t := strings.TrimSpace(line)
+		if strings.HasPrefix(t, "[") {
+			section = t
+			if t == "[defaults]" {
+				at = len(out) + 1
+			}
+		} else if k, _, ok := strings.Cut(t, "="); ok && section == "[defaults]" && strings.TrimSpace(k) == "group" {
+			continue
+		}
+		if line != "" || len(out) > 0 {
+			out = append(out, line)
+		}
+	}
+	if group != "" {
+		if at < 0 {
+			out = append(out, "[defaults]")
+			at = len(out)
+		}
+		out = slices.Insert(out, at, "group = "+group)
+	}
+	return afero.WriteFile(fs, path, []byte(strings.Join(out, "\n")+"\n"), 0o600)
 }
