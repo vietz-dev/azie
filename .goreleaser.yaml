@@ -20,7 +20,7 @@ checksum:
   name_template: checksums.txt
 
 changelog:
-  use: github
+  use: git # the prerelease tag exists only locally in the runner, so the GitHub API cannot compare it
   filters:
     exclude: ["^chore", "^docs", "^ci"]
 
