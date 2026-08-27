@@ -1,0 +1,7 @@
+[tools]
+go = "1.27"
+hk = "latest"
+golangci-lint = "latest"
+goreleaser = "latest"
+actionlint = "latest"
+"go:golang.org/x/vuln/cmd/govulncheck" = "latest"

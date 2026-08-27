@@ -1,0 +1,38 @@
+name: release
+
+on:
+  push:
+    branches: [main]
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      # A merge to main gets a local prerelease tag (next patch + "-pre.<sha>").
+      # GoReleaser creates the tag on GitHub together with the release, so no
+      # tag push is needed and this workflow is not re-triggered.
+      - name: Tag prerelease
+        if: github.ref_type == 'branch'
+        run: |
+          last=$(git describe --tags --abbrev=0 --match 'v[0-9]*' --exclude '*-pre.*' 2>/dev/null || echo v0.0.0)
+          IFS=. read -r major minor patch <<< "${last#v}"
+          tag="v$major.$minor.$((patch + 1))-pre.${GITHUB_SHA::7}"
+          git tag "$tag"
+          echo "tagged $tag"
+      - uses: goreleaser/goreleaser-action@v7
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,28 @@
+amends "package://github.com/jdx/hk/releases/download/v1.56.1/hk@1.56.1#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.56.1/hk@1.56.1#/Builtins.pkl"
+
+local linters = new Mapping<String, Step> {
+  ["go_fmt"] = Builtins.go_fmt
+  // types, vet, staticcheck, errcheck, gosec (security) via .golangci.yml
+  ["golangci_lint"] = Builtins.golangci_lint
+  ["go_vuln_check"] = Builtins.go_vuln_check
+  ["actionlint"] = Builtins.actionlint
+  ["trailing_whitespace"] = Builtins.trailing_whitespace
+  ["check_merge_conflict"] = Builtins.check_merge_conflict
+  ["detect_private_key"] = Builtins.detect_private_key
+}
+
+hooks {
+  ["pre-commit"] {
+    fix = true
+    stash = "git"
+    steps = linters
+  }
+  ["check"] {
+    steps = linters
+  }
+  ["fix"] {
+    fix = true
+    steps = linters
+  }
+}
