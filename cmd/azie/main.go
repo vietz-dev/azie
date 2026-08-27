@@ -42,9 +42,14 @@ func main() {
 
 	var group string
 	ctx := &cobra.Command{
-		Use:   "ctx [subscription|-]",
-		Short: "Spawn a shell for a subscription (fzf picker without argument, - for the previous one); switches in place inside an azie shell",
-		Args:  cobra.MaximumNArgs(1),
+		Use:   "ctx [subscription|-] [-- command...]",
+		Short: "Spawn a shell for a subscription (fzf picker without argument, - for the previous one); switches in place inside an azie shell. With -- the command runs instead of a shell",
+		Args: func(cmd *cobra.Command, args []string) error {
+			if n := cmd.ArgsLenAtDash(); n > 1 || (n < 0 && len(args) > 1) {
+				return fmt.Errorf("at most one subscription, put a command after --")
+			}
+			return nil
+		},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) > 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp
@@ -54,6 +59,10 @@ func main() {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if cfgErr != nil {
 				return cfgErr
+			}
+			var command []string
+			if n := cmd.ArgsLenAtDash(); n >= 0 {
+				args, command = args[:n], args[n:]
 			}
 			dir := azure.Home()
 			if active {
@@ -100,8 +109,9 @@ func main() {
 			if err := session.SaveState(fs, session.State{LastCtx: sub.Name}); err != nil {
 				return err
 			}
-			if !active {
-				return shell.Spawn(fs, cfg, sub, group)
+			// A command always gets its own copy, even inside an azie shell.
+			if !active || len(command) > 0 {
+				return shell.Spawn(fs, cfg, sub, group, command)
 			}
 			p.SetDefault(sub.ID)
 			if err := p.Write(fs, dir); err != nil {
@@ -221,6 +231,10 @@ func main() {
 	})
 
 	if err := root.Execute(); err != nil {
+		var exit *exec.ExitError
+		if errors.As(err, &exit) {
+			os.Exit(exit.ExitCode())
+		}
 		fmt.Fprintln(os.Stderr, "azie:", err)
 		os.Exit(1)
 	}
