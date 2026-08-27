@@ -16,6 +16,7 @@ azie ctx "Customer A"   # same, by name, id or unique substring
 azie ctx "Customer B"   # inside an azie shell: switch this shell in place
 azie ctx -              # previous subscription (of this shell; outside a shell: the last one used)
 azie ctx "Customer A" -g my-rg   # also set the default resource group
+azie ctx "Customer A" -- claude  # run a command instead of a shell (exit code is passed on)
 azie rg                 # inside an azie shell: pick default resource group with fzf ([defaults] group in the az config)
 azie rg my-rg           # set it by name (validated, see settings)
 azie rg -               # previous resource group of this shell
@@ -25,6 +26,11 @@ azie info               # print "subscription|group" (used by the prompt)
 
 Supported shells: fish, zsh, bash (detected from the parent process or `$SHELL`, override with `AZIE_SHELL` or the settings file).
 `AZIE_AZURE_HOME` overrides the source directory (`~/.azure`).
+
+`azie ctx <subscription> -- <command>` runs the command with its own `AZURE_CONFIG_DIR`
+instead of an interactive shell: no rc files, no prompt, the temp dir is removed when the
+command exits and its exit code is passed on. Use it to start agents (`claude`, `codex`) or
+scripts that must not be affected by `az account set` in other terminals.
 
 `az login` inside an azie shell only affects that shell. Log in once in a normal shell so
 the token cache is inherited by all azie shells.
